@@ -1,0 +1,9 @@
+name = "PlotKitCharts"
+authors = ["Sanjay Lall <sanjaylall@google.com>"]
+uuid = "876e3276-866e-4d7d-8cf4-c295b4e7fa09"
+version = "0.1.0"
+
+[deps]
+PlotKitAxes = "d206e830-6474-4927-8e6c-338e8092c5c7"
+PlotKitDiagrams = "64f37de4-b5f6-47b0-be42-d75bd846556a"
+
