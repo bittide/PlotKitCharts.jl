@@ -14,50 +14,66 @@
 
 module Charts
 
-using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, circle, colormap, draw, drawaxis, line, setclipbox, setoptions!
+using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, line, setclipbox, setoptions!
 
-export Chart, ChartStyle
+export Chart
 
-Base.@kwdef mutable struct ChartStyle
+Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
     markerradius = i -> 0
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
     markerscaletype = i -> :none
-end
-
-
-Base.@kwdef mutable struct Chart
-    axis::Axis
     data
-    cs::ChartStyle
+    kw = Dict()
 end
+
+    
+
+
+# if you construct the axis like this, then you cannot put 
+# options in the axis construction that depend on the the Chart struct
+#
+# function Chart(data; kw...)
+#     axis  = Axis(data; kw...)
+#     return Chart(; data, axis, allowed_kws(Chart, kw)...)
+# end
+
+
+# if you construct the axis like this then you cannot put kw options for axis
+# in the call to Chart
+#
+# PlotKit.Axis(chart::Chart; kw...) = Axis(; merge(axis_defaults(chart), kw)...)
+
+
+# So instead we do this. An issue here is that this constructor
+# must have at least one required argument to avoid conflict with
+# the constructor defined by @kwdef
+Chart(data; kw...) =  Chart(; data, kw, allowed_kws(Chart, kw)...)
+
+
+# Now you can put axis options in the call to Chart
+# or in the call to draw
+PlotKitAxes.Axis(chart::Chart; kw...) = Axis(chart.data; chart.kw..., kw...)
+
 
 list_of_series(x::Vector{Point}) = [x]
 list_of_series(x::Vector{Vector{Point}}) = x
 
-
-function Chart(data; kw...)
-    cs = ChartStyle()
-    setoptions!(cs, "chartstyle_", kw...)
-    axis = Axis(data; kw...)
-    return Chart(axis, data, cs)
-end
-
-function PlotKitAxes.draw(chart::Chart)
-    ad = AxisDrawable(chart.axis)
-    cs = chart.cs
+function PlotKitAxes.draw(chart::Chart; kw...)
+    axis = Axis(chart; kw...)
+    ad = AxisDrawable(axis)
     serieslist = list_of_series(chart.data)
     drawaxis(ad)
     setclipbox(ad)
     for (i,series) in enumerate(serieslist)
-        line(ad, series; linestyle = cs.linestyle(i))
-        if cs.markerradius(i) > 0
+        line(ad, series; linestyle = chart.linestyle(i))
+        if chart.markerradius(i) > 0
             for p in series[i]
-                circle(ad, p, cs.markerradius(i);
-                       scaletype = cs.markerscaletype(i),
-                       fillcolor = cs.markerfillcolor(i),
-                       linestyle = cs.markerlinestyle(i))
+                circle(ad, p, chart.markerradius(i);
+                       scaletype = chart.markerscaletype(i),
+                       fillcolor = chart.markerfillcolor(i),
+                       linestyle = chart.markerlinestyle(i))
             end
         end
     end
