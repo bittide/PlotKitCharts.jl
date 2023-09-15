@@ -25,47 +25,36 @@ Base.@kwdef mutable struct Chart
     markerlinestyle = i -> nothing
     markerscaletype = i -> :none
     data
-    kw = Dict()
+    axis = nothing
 end
 
     
+##############################################################################
+# option 4
 
-
-# if you construct the axis like this, then you cannot put 
-# options in the axis construction that depend on the the Chart struct
-#
-# function Chart(data; kw...)
-#     axis  = Axis(data; kw...)
-#     return Chart(; data, axis, allowed_kws(Chart, kw)...)
-# end
-
-
-# if you construct the axis like this then you cannot put kw options for axis
-# in the call to Chart
-#
-# PlotKit.Axis(chart::Chart; kw...) = Axis(; merge(axis_defaults(chart), kw)...)
-
-
-# So instead we do this. An issue here is that this constructor
-# must have at least one required argument to avoid conflict with
-# the constructor defined by @kwdef
-Chart(data; kw...) =  Chart(; data, kw, allowed_kws(Chart, kw)...)
-
-
-# Now you can put axis options in the call to Chart
-# or in the call to draw
-PlotKitAxes.Axis(chart::Chart; kw...) = Axis(chart.data; chart.kw..., kw...)
+function Chart(data; kw...)
+    chart = Chart(; data, allowed_kws(Chart, kw)...)
+    axis  = Axis(chart.data; kw...)
+    chart.axis = axis
+    return chart
+end
+##############################################################################
 
 
 list_of_series(x::Vector{Point}) = [x]
 list_of_series(x::Vector{Vector{Point}}) = x
 
 function PlotKitAxes.draw(chart::Chart; kw...)
-    axis = Axis(chart; kw...)
+    axis = chart.axis
     ad = AxisDrawable(axis)
-    serieslist = list_of_series(chart.data)
     drawaxis(ad)
     setclipbox(ad)
+    draw(ad, chart; kw...)
+    return ad
+end
+
+function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
+    serieslist = list_of_series(chart.data)
     for (i,series) in enumerate(serieslist)
         line(ad, series; linestyle = chart.linestyle(i))
         if chart.markerradius(i) > 0
@@ -77,8 +66,47 @@ function PlotKitAxes.draw(chart::Chart; kw...)
             end
         end
     end
-    return ad
 end
+
+
+##############################################################################
+# option 1
+#
+# if you construct the axis like this, then you cannot put 
+# options in the axis construction that depend on the the Chart struct
+#
+# function Chart(data; kw...)
+#     axis  = Axis(data; kw...)
+#     return Chart(; data, axis, allowed_kws(Chart, kw)...)
+# end
+##############################################################################
+
+
+##############################################################################
+# option 2
+#
+# if you construct the axis like this then you cannot put kw options for axis
+# in the call to Chart
+#
+# PlotKit.Axis(chart::Chart; kw...) = Axis(; merge(axis_defaults(chart), kw)...)
+##############################################################################
+
+##############################################################################
+# option 3
+#
+# An issue here is that this constructor
+# must have at least one required argument to avoid conflict with
+# the constructor defined by @kwdef
+#
+# Note this needs a kw field in Chart.
+#
+# Chart(data; kw...) =  Chart(; data, kw, allowed_kws(Chart, kw)...)
+#
+# Now you can put axis options in the call to Chart
+# or in the call to draw
+#
+# PlotKitAxes.Axis(chart::Chart; kw...) = Axis(chart.data; chart.kw..., kw...)
+##############################################################################
 
 
 end
