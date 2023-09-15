@@ -53,10 +53,13 @@ function PlotKitAxes.draw(chart::Chart; kw...)
     return ad
 end
 
+ati(i, f::Function) = f(i)
+ati(i, f) = f
+
 function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
     serieslist = list_of_series(chart.data)
     for (i,series) in enumerate(serieslist)
-        line(ad, series; linestyle = chart.linestyle(i))
+        line(ad, series; linestyle = ati(i, chart.linestyle))
         if chart.markerradius(i) > 0
             for p in series[i]
                 circle(ad, p, chart.markerradius(i);
