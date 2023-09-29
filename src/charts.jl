@@ -40,9 +40,11 @@ function Chart(data; kw...)
 end
 ##############################################################################
 
-
+# Axis also takes data, how does it do it
+#
 list_of_series(x::Vector{Point}) = [x]
 list_of_series(x::Vector{Vector{Point}}) = x
+list_of_series(x::Array{Vector{Point}}) = x
 
 function PlotKitAxes.draw(chart::Chart; kw...)
     axis = chart.axis
@@ -56,16 +58,20 @@ end
 ati(i, f::Function) = f(i)
 ati(i, f) = f
 
+# should probably use this instead.
+# for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
+#
+
 function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
     serieslist = list_of_series(chart.data)
     for (i,series) in enumerate(serieslist)
         line(ad, series; linestyle = ati(i, chart.linestyle))
-        if chart.markerradius(i) > 0
-            for p in series[i]
-                circle(ad, p, chart.markerradius(i);
-                       scaletype = chart.markerscaletype(i),
-                       fillcolor = chart.markerfillcolor(i),
-                       linestyle = chart.markerlinestyle(i))
+        if ati(i, chart.markerradius) > 0
+            for p in series
+                circle(ad, p, ati(i, chart.markerradius);
+                       scaletype = ati(i, chart.markerscaletype), 
+                       fillcolor = ati(i, chart.markerfillcolor), 
+                       linestyle = ati(i, chart.markerlinestyle))
             end
         end
     end
