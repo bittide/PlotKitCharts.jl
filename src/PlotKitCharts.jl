@@ -19,6 +19,9 @@ using PlotKitAxes
 include("charts.jl")
 using .Charts
 
+include("bars.jl")
+using .Bars
+
 #include("digraph.jl")
 #using .DiGraph
 
@@ -30,6 +33,9 @@ function reexport(m)
 end
 
 reexport(Charts)
+reexport(Bars)
+
+
 #reexport(DiGraph)
 
 
