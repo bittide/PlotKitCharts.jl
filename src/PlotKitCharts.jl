@@ -15,12 +15,19 @@
 module PlotKitCharts
 
 using PlotKitAxes
+using PlotKitDiagrams
+
+include("labelpositioner.jl")
+using .LabelPositioner
 
 include("charts.jl")
 using .Charts
 
 include("bars.jl")
 using .Bars
+
+include("xgraphs.jl")
+using .Xgraphs
 
 #include("digraph.jl")
 #using .DiGraph
@@ -32,8 +39,10 @@ function reexport(m)
     end
 end
 
+reexport(LabelPositioner)
 reexport(Charts)
 reexport(Bars)
+reexport(Xgraphs)
 
 
 #reexport(DiGraph)

@@ -14,9 +14,11 @@
 
 module Charts
 
-using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PointList, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, input, line, setclipbox, setoptions!
+using ..PlotKitAxes: Axis, AxisDrawable, Color, LineStyle, PointList, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, input, line, setclipbox, setoptions!, text
 
-export Chart
+using ..LabelPositioner: LineLabelPositioner
+
+export Chart, drawlabel
 
 Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
@@ -24,8 +26,14 @@ Base.@kwdef mutable struct Chart
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
     markerscaletype = i -> :none
+    labeled = false
+    xdes = nothing
+    labelfontname = "Sans"
+    labelfontsize = 9
+    labelradius = 8
     pll::Vector{PointList}   # pointlist list
     axis = nothing
+    labelpositioner = nothing
 end
 
     
@@ -71,7 +79,36 @@ function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
             end
         end
     end
+    if chart.labeled
+        xdes = chart.xdes
+        if isnothing(xdes)
+            xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
+        end
+        llp = LineLabelPositioner(ad, chart.pll, xdes)
+        for i = 1:length(chart.pll)
+            drawlabel(ad, llp.markerpositions[i], i;
+                      labelradius = chart.labelradius,
+                      fontsize = chart.labelfontsize,
+                      fontname = chart.labelfontname)
+        end
+    end
 end
+
+
+
+function drawlabel(ad::AxisDrawable, p::Point, i; labelradius = 8, fontsize = 9, fontname = "Sans")
+    col = colormap(i)
+    circle(ad.ctx, p, labelradius; 
+           linestyle = LineStyle(col,1), fillcolor = Color(:white))
+    text(ad.ctx, p, fontsize, col, string(i);
+         fname = fontname, horizontal = "center", vertical = "center")
+end
+
+
+
+
+
+
 
 
 ##############################################################################
