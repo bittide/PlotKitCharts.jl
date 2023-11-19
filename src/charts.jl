@@ -14,7 +14,7 @@
 
 module Charts
 
-using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, line, setclipbox, setoptions!
+using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PointList, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, input, line, setclipbox, setoptions!
 
 export Chart
 
@@ -24,7 +24,7 @@ Base.@kwdef mutable struct Chart
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
     markerscaletype = i -> :none
-    data
+    pll::Vector{PointList}   # pointlist list
     axis = nothing
 end
 
@@ -33,8 +33,8 @@ end
 # option 4
 
 function Chart(data; kw...)
-    chart = Chart(; data, allowed_kws(Chart, kw)...)
-    axis  = Axis(chart.data; kw...)
+    chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)
+    axis  = Axis(chart.pll; kw...)
     chart.axis = axis
     return chart
 end
@@ -42,9 +42,6 @@ end
 
 # Axis also takes data, how does it do it
 #
-list_of_series(x::Vector{Point}) = [x]
-list_of_series(x::Vector{Vector{Point}}) = x
-list_of_series(x::Array{Vector{Point}}) = x
 
 function PlotKitAxes.draw(chart::Chart; kw...)
     axis = chart.axis
@@ -63,11 +60,10 @@ ati(i, f) = f
 #
 
 function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
-    serieslist = list_of_series(chart.data)
-    for (i,series) in enumerate(serieslist)
-        line(ad, series; linestyle = ati(i, chart.linestyle))
+    for (i, pl) in enumerate(chart.pll)
+        line(ad, pl.points; linestyle = ati(i, chart.linestyle))
         if ati(i, chart.markerradius) > 0
-            for p in series
+            for p in pl.points
                 circle(ad, p, ati(i, chart.markerradius);
                        scaletype = ati(i, chart.markerscaletype), 
                        fillcolor = ati(i, chart.markerfillcolor), 
