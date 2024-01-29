@@ -69,6 +69,7 @@ ati(i, f) = f
 
 function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
     for (i, pl) in enumerate(chart.pll)
+        #println("points = ", pl.points)
         line(ad, pl.points; linestyle = ati(i, chart.linestyle))
         if ati(i, chart.markerradius) > 0
             for p in pl.points

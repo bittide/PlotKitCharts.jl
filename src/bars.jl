@@ -14,7 +14,7 @@
 
 module Bars
 
-using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, line, rect, setclipbox, setoptions!
+using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, PointList, allowed_kws, circle, colormap, draw, drawaxis, line, rect, setclipbox, setoptions!
 
 export BarChart
 
@@ -22,7 +22,7 @@ Base.@kwdef mutable struct BarChart
     linestyle = i -> LineStyle(colormap(i,2) , 1)
     fillcolor = i -> colormap(i)
     barshrink = 0.9
-    data
+    data::PointList
     axis = nothing
 end
 
@@ -32,24 +32,17 @@ end
 
 function BarChart(data; kw...)
     barchart = BarChart(; data, allowed_kws(BarChart, kw)...)
-    barwidth = getbarwidth(list_of_series(data)[1])
+    barwidth = getbarwidth(data)
     axis  = Axis(barchart.data; xdatamargin = barwidth/2, kw...)
     barchart.axis = axis
     return barchart
 end
 ##############################################################################
 
-# Axis also takes data, how does it do it
-#
-list_of_series(x::Vector{Point}) = [x]
-list_of_series(x::Vector{Vector{Point}}) = x
-list_of_series(x::Array{Vector{Point}}) = x
-
-function getbarwidth(series)
-    xvalues = [a.x for a in series]
+function getbarwidth(pl::PointList)
+    xvalues = [a.x for a in pl.points]
     dx = diff(xvalues)
     w = maximum(dx)
-    println((;xvalues, dx, w))
     return w
 end
 
@@ -65,18 +58,11 @@ end
 ati(i, f::Function) = f(i)
 ati(i, f) = f
 
-# should probably use this instead.
-# for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
-#
-
 function PlotKitAxes.draw(ad::AxisDrawable, barchart::BarChart; kw...)
-    serieslist = list_of_series(barchart.data)
-
-    series = serieslist[1]
-    barwidth = getbarwidth(series)
+    barwidth = getbarwidth(barchart.data)
     hw = barchart.barshrink * (barwidth/2)
     
-    for (i,p) in pairs(series)
+    for (i,p) in pairs(barchart.data.points)
         linestyle = ati(i, barchart.linestyle)
         fillcolor = ati(i, barchart.fillcolor)
 
