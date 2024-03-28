@@ -22,7 +22,7 @@ Base.@kwdef mutable struct BarChart
     linestyle = i -> LineStyle(colormap(i,2) , 1)
     fillcolor = i -> colormap(i)
     barshrink = 0.9
-    data::PointList
+    pl::PointList
     axis = nothing
 end
 
@@ -31,9 +31,10 @@ end
 # option 4
 
 function BarChart(data; kw...)
-    barchart = BarChart(; data, allowed_kws(BarChart, kw)...)
-    barwidth = getbarwidth(data)
-    axis  = Axis(barchart.data; xdatamargin = barwidth/2, kw...)
+    pl = PointList(data)
+    barchart = BarChart(; pl, allowed_kws(BarChart, kw)...)
+    barwidth = getbarwidth(pl)
+    axis  = Axis(pl; xdatamargin = barwidth/2, kw...)
     barchart.axis = axis
     return barchart
 end
@@ -59,10 +60,10 @@ ati(i, f::Function) = f(i)
 ati(i, f) = f
 
 function PlotKitAxes.draw(ad::AxisDrawable, barchart::BarChart; kw...)
-    barwidth = getbarwidth(barchart.data)
+    barwidth = getbarwidth(barchart.pl)
     hw = barchart.barshrink * (barwidth/2)
     
-    for (i,p) in pairs(barchart.data.points)
+    for (i,p) in pairs(barchart.pl.points)
         linestyle = ati(i, barchart.linestyle)
         fillcolor = ati(i, barchart.fillcolor)
 
