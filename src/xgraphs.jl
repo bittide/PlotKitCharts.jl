@@ -3,8 +3,10 @@ module Xgraphs
 
 export XGraphStyle, XGraph
 
-using ..PlotKitAxes: Color, LineStyle, PointList, Point, colormap, corners, expand_box, setoptions!, smallest_box_containing_data
-using ..PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, circle, colormap, corners, draw, expand_box, line, text
+
+using PlotKitAxes: PointList, setoptions!, smallest_box_containing_data
+using PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
 
 Base.@kwdef mutable struct XGraphStyle
     directed = true

@@ -14,7 +14,8 @@
 
 module Charts
 
-using ..PlotKitAxes: Axis, AxisDrawable, Color, LineStyle, PointList, PlotKitAxes, Point, allowed_kws, circle, colormap, draw, drawaxis, input, line, setclipbox, setoptions!, text
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, circle, colormap, draw, line, text
+using PlotKitAxes: Axis, AxisDrawable, PointList, PlotKitAxes, allowed_kws, drawaxis, input,  setclipbox, setoptions!
 
 using ..LabelPositioner: LineLabelPositioner
 
@@ -51,7 +52,7 @@ end
 # Axis also takes data, how does it do it
 #
 
-function PlotKitAxes.draw(chart::Chart; kw...)
+function PlotKitCairo.draw(chart::Chart; kw...)
     axis = chart.axis
     ad = AxisDrawable(axis)
     drawaxis(ad)
@@ -67,7 +68,7 @@ ati(i, f) = f
 # for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
 #
 
-function PlotKitAxes.draw(ad::AxisDrawable, chart::Chart; kw...)
+function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
     for (i, pl) in enumerate(chart.pll)
         #println("points = ", pl.points)
         line(ad, pl.points; linestyle = ati(i, chart.linestyle))

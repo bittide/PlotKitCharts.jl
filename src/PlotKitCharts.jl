@@ -14,9 +14,6 @@
 
 module PlotKitCharts
 
-using PlotKitAxes
-using PlotKitDiagrams
-
 include("labelpositioner.jl")
 using .LabelPositioner
 

@@ -14,7 +14,8 @@
 
 module Bars
 
-using ..PlotKitAxes: Axis, AxisDrawable, LineStyle, PlotKitAxes, Point, PointList, allowed_kws, circle, colormap, draw, drawaxis, line, rect, setclipbox, setoptions!
+using PlotKitCairo: LineStyle, PlotKitCairo, Point, circle, colormap, draw,  line, rect
+using PlotKitAxes: Axis, AxisDrawable,  PlotKitAxes, PointList, allowed_kws, drawaxis, setclipbox, setoptions!
 
 export BarChart
 
@@ -47,7 +48,7 @@ function getbarwidth(pl::PointList)
     return w
 end
 
-function PlotKitAxes.draw(barchart::BarChart; kw...)
+function PlotKitCairo.draw(barchart::BarChart; kw...)
     axis = barchart.axis
     ad = AxisDrawable(axis)
     drawaxis(ad)
@@ -59,7 +60,7 @@ end
 ati(i, f::Function) = f(i)
 ati(i, f) = f
 
-function PlotKitAxes.draw(ad::AxisDrawable, barchart::BarChart; kw...)
+function PlotKitCairo.draw(ad::AxisDrawable, barchart::BarChart; kw...)
     barwidth = getbarwidth(barchart.pl)
     hw = barchart.barshrink * (barwidth/2)
     
