@@ -153,6 +153,30 @@ end
 ##############################################################################
 
 
+##############################################################################
+# option 4
+#
+# 
+# function Chart(data; kw...)
+#     chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)
+#     axis  = Axis(chart.pll; kw...)
+#     chart.axis = axis
+#     return chart
+# end
+# 
+#
+# This way, options for Axis can be included in the call to Chart.
+# And if we need to compute quantities needed for the call
+# to Axis, we can do so before the call to Axis.
+# But there does need to be a required argument, otherwise
+# the base.kw constructor for Chart will be called.
+# Another nice feature is that we don't need to store the kw in Chart.
+# The call to allowed_kws strips out any keyword arguments
+# that the base.kw constructor for Chart cannot accept.
+# 
+
+
+
 end
 
 
