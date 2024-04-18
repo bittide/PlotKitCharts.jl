@@ -22,6 +22,7 @@ Base.@kwdef mutable struct XGraphStyle
     edgelabelradius = e -> 0.14
     edgelabelfillcolor = e -> Color(:white)
     edgelabeltextcolor = e -> colormap(1)
+    edgelabeloffset = e -> nothing
     linestyles = e -> LineStyle(Color(:black), 1)
     arrowcolors = e -> Color(:black)
     arrowposnolabel = e -> 0.5
@@ -71,6 +72,7 @@ function XGraph(gs::XGraphStyle, edges, x; kw...)
                                 radius = gs.edgelabelradius(e),
                                 fillcolor = gs.edgelabelfillcolor(e),
                                 textcolor = gs.edgelabeltextcolor(e),
+                                offset = gs.edgelabeloffset(e),
                                 linestyle = nothing,
                                 text = string(gs.edgelabels(e))))
 
