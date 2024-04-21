@@ -1,8 +1,8 @@
 
 module LabelPositioner
 
-using PlotKitCairo: Point
-using PlotKitAxes: AxisMap, AxisDrawable, PointList
+using PlotKitCairo: Point, PointList
+using PlotKitAxes: AxisMap, AxisDrawable
 using PlotKitDiagrams
 
 export LineLabelPositioner

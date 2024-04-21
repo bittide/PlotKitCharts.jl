@@ -14,8 +14,8 @@
 
 module Charts
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, circle, colormap, draw, line, text
-using PlotKitAxes: Axis, AxisDrawable, PointList, PlotKitAxes, allowed_kws, drawaxis, input,  setclipbox, setoptions!
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, circle, colormap, draw, input, line, setoptions!, text
+using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
 
@@ -61,8 +61,6 @@ function PlotKitCairo.draw(chart::Chart; kw...)
     return ad
 end
 
-ati(i, f::Function) = f(i)
-ati(i, f) = f
 
 # should probably use this instead.
 # for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
@@ -71,13 +69,13 @@ ati(i, f) = f
 function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
     for (i, pl) in enumerate(chart.pll)
         #println("points = ", pl.points)
-        line(ad, pl.points; linestyle = ati(i, chart.linestyle))
-        if ati(i, chart.markerradius) > 0
+        line(ad, pl.points; linestyle = ati(chart.linestyle, i))
+        if ati(chart.markerradius, i) > 0
             for p in pl.points
-                circle(ad, p, ati(i, chart.markerradius);
-                       scaletype = ati(i, chart.markerscaletype), 
-                       fillcolor = ati(i, chart.markerfillcolor), 
-                       linestyle = ati(i, chart.markerlinestyle))
+                circle(ad, p, ati(chart.markerradius, i);
+                       scaletype = ati(chart.markerscaletype, i), 
+                       fillcolor = ati(chart.markerfillcolor, i), 
+                       linestyle = ati(chart.markerlinestyle, i))
             end
         end
     end
