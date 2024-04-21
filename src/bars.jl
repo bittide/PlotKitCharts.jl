@@ -14,7 +14,7 @@
 
 module Bars
 
-using PlotKitCairo: LineStyle, PlotKitCairo, Point, PointList, allowed_kws, circle, colormap, draw,  line, rect, setoptions!
+using PlotKitCairo: LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw,  line, rect, setoptions!
 using PlotKitAxes: Axis, AxisDrawable,  PlotKitAxes, drawaxis, setclipbox
 
 export BarChart
@@ -67,7 +67,7 @@ function PlotKitCairo.draw(ad::AxisDrawable, barchart::BarChart; kw...)
         fillcolor = ati(barchart.fillcolor, i)
 
         rect(ad, Point(p.x - hw, 0), Point(2 * hw, p.y);
-             fillcolor = ati(barchart.fillcolor. i), 
+             fillcolor = ati(barchart.fillcolor, i), 
              linestyle = ati(barchart.linestyle, i))
     end
     
