@@ -1,7 +1,7 @@
 name = "PlotKitCharts"
 authors = ["Sanjay Lall <sanjaylall@google.com>"]
 uuid = "876e3276-866e-4d7d-8cf4-c295b4e7fa09"
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 PlotKitAxes = "d206e830-6474-4927-8e6c-338e8092c5c7"
