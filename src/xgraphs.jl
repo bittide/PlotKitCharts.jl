@@ -36,6 +36,7 @@ Base.@kwdef mutable struct XGraphStyle
     classes = []
     classmargin = 0.4
     extraedgelabelnodes = e -> ()
+    scaletype = :x
 end
 
 function XGraph(edges, x; kw...)
@@ -68,6 +69,7 @@ function XGraph(gs::XGraphStyle, edges, x; kw...)
                         fontsize = ati(gs.nodefontsize,i),
                         fontname = ati(gs.nodefontname,i),
                         radius = ati(gs.noderadius,i),
+                        scaletype = gs.scaletype,
                         fillcolor = ati(gs.nodecolors,i)) for i=1:n]
 
     edge_label_nodes(e) = (ati(gs.edgelabelpos,e),
