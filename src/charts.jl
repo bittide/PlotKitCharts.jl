@@ -14,7 +14,7 @@
 
 module Charts
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, circle, colormap, draw, input, line, setoptions!, text
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text
 using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
