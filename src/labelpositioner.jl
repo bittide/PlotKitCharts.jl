@@ -58,9 +58,9 @@ function setmarkerpositions(llp::LineLabelPositioner, ax::AxisMap)
     end
 end
 
-function LineLabelPositioner(ad::AxisDrawable, pll::Vector{PointList}, xdes)
+function LineLabelPositioner(ad::AxisDrawable, pll::Vector{PointList}, xdes; kw...)
     f = (i,x) -> interpolate(pll[i],x)
-    llp = LineLabelPositioner(; f, xdes, n = length(pll))
+    llp = LineLabelPositioner(; f, xdes, n = length(pll), kw...)
     setmarkerpositions(llp, ad.axis.ax)
     return llp
 end

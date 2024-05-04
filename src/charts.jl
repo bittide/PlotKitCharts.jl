@@ -32,6 +32,8 @@ Base.@kwdef mutable struct Chart
     labelfontname = "Sans"
     labelfontsize = 9
     labelradius = 8
+    labeltext = i -> string(i)
+    labelseparation = 10
     pll::Vector{PointList}   # pointlist list
     axis = nothing
     labelpositioner = nothing
@@ -84,10 +86,11 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
         if isnothing(xdes)
             xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
         end
-        llp = LineLabelPositioner(ad, chart.pll, xdes)
+        llp = LineLabelPositioner(ad, chart.pll, xdes; separation = chart.labelseparation)
         for i = 1:length(chart.pll)
             drawlabel(ad, llp.markerpositions[i], i;
                       labelradius = chart.labelradius,
+                      labeltext = ati(chart.labeltext, i),
                       fontsize = chart.labelfontsize,
                       fontname = chart.labelfontname)
         end
@@ -96,11 +99,13 @@ end
 
 
 
-function drawlabel(ad::AxisDrawable, p::Point, i; labelradius = 8, fontsize = 9, fontname = "Sans")
+function drawlabel(ad::AxisDrawable, p::Point, i;
+                   labeltext, 
+                   labelradius = 8, fontsize = 9, fontname = "Sans")
     col = colormap(i)
     circle(ad.ctx, p, labelradius; 
            linestyle = LineStyle(col,1), fillcolor = Color(:white))
-    text(ad.ctx, p, fontsize, col, string(i);
+    text(ad.ctx, p, fontsize, col, labeltext,
          fname = fontname, horizontal = "center", vertical = "center")
 end
 
