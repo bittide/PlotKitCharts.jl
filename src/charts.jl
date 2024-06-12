@@ -100,7 +100,7 @@ end
 
 
 function drawlabel(ad::AxisDrawable, p::Point, i;
-                   labeltext, 
+                   labeltext = string(i), 
                    labelradius = 8, fontsize = 9, fontname = "Sans")
     col = colormap(i)
     circle(ad.ctx, p, labelradius; 
