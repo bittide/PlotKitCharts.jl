@@ -95,6 +95,7 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
                       fontname = chart.labelfontname)
         end
     end
+    return ad
 end
 
 
