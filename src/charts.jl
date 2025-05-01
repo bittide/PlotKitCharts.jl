@@ -33,6 +33,7 @@ Base.@kwdef mutable struct Chart
     labelfontsize = 9
     labelradius = 8
     labeltext = i -> string(i)
+    labelcolor = i -> colormap(i)
     labelseparation = 10
     pll::Vector{PointList}   # pointlist list
     axis = nothing
@@ -90,6 +91,7 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
         for i = 1:length(chart.pll)
             drawlabel(ad, llp.markerpositions[i], i;
                       labelradius = chart.labelradius,
+                      labelcolor = ati(chart.labelcolor, i),
                       labeltext = ati(chart.labeltext, i),
                       fontsize = chart.labelfontsize,
                       fontname = chart.labelfontname)
@@ -101,15 +103,14 @@ end
 
 
 function drawlabel(ad::AxisDrawable, p::Point, i;
-                   labeltext = string(i), 
+                   labeltext = string(i),
+                   labelcolor = colormap(i),
                    labelradius = 8, fontsize = 9, fontname = "Sans")
-    col = colormap(i)
     circle(ad.ctx, p, labelradius; 
-           linestyle = LineStyle(col,1), fillcolor = Color(:white))
-    text(ad.ctx, p, fontsize, col, labeltext,
+           linestyle = LineStyle(labelcolor, 1), fillcolor = Color(:white))
+    text(ad.ctx, p, fontsize, labelcolor, labeltext,
          fname = fontname, horizontal = "center", vertical = "center")
 end
-
 
 
 
