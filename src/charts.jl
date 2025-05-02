@@ -19,7 +19,7 @@ using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
 
-export Chart, drawlabel
+export Chart, drawlabel, drawchartlabels
 
 Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
@@ -82,6 +82,11 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
             end
         end
     end
+    drawchartlabels(ad, chart; kw...)
+    return ad
+end
+
+function drawchartlabels(ad::AxisDrawable, chart::Chart; kw...)
     if chart.labeled
         xdes = chart.xdes
         if isnothing(xdes)
@@ -97,7 +102,6 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
                       fontname = chart.labelfontname)
         end
     end
-    return ad
 end
 
 
