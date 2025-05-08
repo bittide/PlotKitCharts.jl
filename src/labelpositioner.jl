@@ -95,9 +95,12 @@ function setnextmarkerposition(llp::LineLabelPositioner, i, ax::AxisMap, databox
 
     # pick closest
     xdes = ax.fx(getentry(llp.xdes, i))
-    val, ind = findmin(p -> abs(p.x - xdes), not_too_close)
-
-    llp.markerpositions[i] = not_too_close[ind]
+    if length(not_too_close) > 0
+        val, ind = findmin(p -> abs(p.x - xdes), not_too_close)
+        llp.markerpositions[i] = not_too_close[ind]
+    else
+        llp.markerpositions[i] = pointonline(xdes)
+    end
 end
 
 function setmarkerpositions(llp::LineLabelPositioner, ax::AxisMap, databox)
