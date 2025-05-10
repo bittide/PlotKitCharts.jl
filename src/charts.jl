@@ -14,12 +14,12 @@
 
 module Charts
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text, qsave
 using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
 
-export Chart, drawlabel, drawchartlabels
+export Chart, drawlabel, drawchartlabels, plot
 
 Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
@@ -27,7 +27,7 @@ Base.@kwdef mutable struct Chart
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
     markerscaletype = i -> :none
-    labeled = false
+    labeled = true
     xdes = nothing
     labelfontname = "Sans"
     labelfontsize = 9
@@ -44,6 +44,8 @@ end
 ##############################################################################
 # option 4
 
+plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
+
 function Chart(data; kw...)
     chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)
     axis  = Axis(chart.pll; kw...)
@@ -55,12 +57,12 @@ end
 # Axis also takes data, how does it do it
 #
 
-function PlotKitCairo.draw(chart::Chart; kw...)
+function PlotKitCairo.draw(chart::Chart)
     axis = chart.axis
     ad = AxisDrawable(axis)
     drawaxis(ad)
     setclipbox(ad)
-    draw(ad, chart; kw...)
+    draw(ad, chart)
     return ad
 end
 
@@ -69,7 +71,7 @@ end
 # for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
 #
 
-function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
+function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart)
     for (i, pl) in enumerate(chart.pll)
         #println("points = ", pl.points)
         line(ad, pl.points; linestyle = ati(chart.linestyle, i))
@@ -82,11 +84,11 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart; kw...)
             end
         end
     end
-    drawchartlabels(ad, chart; kw...)
+    drawchartlabels(ad, chart)
     return ad
 end
 
-function drawchartlabels(ad::AxisDrawable, chart::Chart; kw...)
+function drawchartlabels(ad::AxisDrawable, chart::Chart)
     if chart.labeled
         xdes = chart.xdes
         if isnothing(xdes)

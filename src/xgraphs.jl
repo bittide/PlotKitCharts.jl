@@ -1,21 +1,21 @@
 
 module Xgraphs
 
-export XGraphStyle, XGraph
+export XGraphStyle, XGraph, inputgraph, plotgraph
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, ati, circle, colormap, corners, draw, expand_box, line, text, setoptions!, smallest_box_containing_data
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, ati, circle, colormap, corners, draw, expand_box, line, qsave,  text, setoptions!, smallest_box_containing_data
 
 
 using PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
 
 Base.@kwdef mutable struct XGraphStyle
     directed = true
-    nodelabels = i -> ""
+    nodelabels = string
     nodecolors = i -> colormap(3)
     nodefontsize = i -> 0.15
     nodefontname = i -> "Sans"
     noderadius = i -> 0.2    
-    edgelabels = e -> ""
+    edgelabels = string
     edgelabelpos = e -> 0.5
     edgelabelfontsize = e -> 0.12
     edgelabelfontname = e -> "Sans"    
@@ -39,7 +39,18 @@ Base.@kwdef mutable struct XGraphStyle
     scaletype = :x
 end
 
-function XGraph(edges, x; kw...)
+plotgraph(graph, f; kw...) =  qsave(draw(XGraph(graph; kw...)), f)
+inputgraph(data) = (data.edges, data.layout)
+
+function XGraph(data; kw...)
+    gs = XGraphStyle()
+    setoptions!(gs, "", kw...)
+    edges, layout = inputgraph(data)
+    return XGraph(edges, layout)
+end
+
+    
+function XGraph(edges::Vector{@NamedTuple{src::Int64, dst::Int64}}, x::Vector{Point}; kw...)
     gs = XGraphStyle()
     setoptions!(gs, "", kw...)
     return XGraph(gs, edges, x; kw...)
