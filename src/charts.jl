@@ -40,11 +40,16 @@ Base.@kwdef mutable struct Chart
     labelpositioner = nothing
 end
 
-    
+##############################################################################
+# purely convenience functions
+
+plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
+
+
 ##############################################################################
 # option 4
 
-plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
+
 
 function Chart(data; kw...)
     chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)

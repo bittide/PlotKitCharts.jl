@@ -46,15 +46,15 @@ function XGraph(data; kw...)
     gs = XGraphStyle()
     setoptions!(gs, "", kw...)
     edges, layout = inputgraph(data)
-    return XGraph(edges, layout)
+    return XGraph(gs, edges, layout; kw...)
 end
 
     
-function XGraph(edges::Vector{@NamedTuple{src::Int64, dst::Int64}}, x::Vector{Point}; kw...)
-    gs = XGraphStyle()
-    setoptions!(gs, "", kw...)
-    return XGraph(gs, edges, x; kw...)
-end
+#function XGraph(edges::Vector{@NamedTuple{src::Int64, dst::Int64}}, x::Vector{Point}; kw...)
+#    gs = XGraphStyle()
+#    setoptions!(gs, "", kw...)
+#    return XGraph(gs, edges, x; kw...)
+#end
 
 
 function XGraph(gs::XGraphStyle, edges, x; kw...)
