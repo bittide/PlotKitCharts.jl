@@ -40,6 +40,10 @@ end
 
 function interpolate(x::Vector, y::Vector, t)
     i = searchsortedlast(x, t)
+
+    if i == 0
+        return y[1]
+    end
     if x[i] == t
         return y[i]
     end
