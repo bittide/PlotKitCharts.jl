@@ -1,9 +1,9 @@
 
 module Xgraphs
 
-export XGraphStyle, XGraph, inputgraph, plotgraph
+export XGraphStyle, XGraph, inputgraph, plot
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, VertexPairs, ati, circle, colormap, corners, draw, expand_box, line, qsave,  text, setoptions!, smallest_box_containing_data
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, VertexPairs, ati, circle, colormap, corners, draw, expand_box, line, qsave,  text, setoptions!, smallest_box_containing_data, input
 
 import ..Charts: Charts, plot
 
@@ -43,6 +43,8 @@ end
 
 # convenience function
 Charts.plot(x::VertexPairs; kw...) = XGraph(x; kw...)
+
+XGraph(x; kw...) = XGraph(input(x); kw...)
 
 function XGraph(data::VertexPairs; kw...)
     gs = XGraphStyle()
