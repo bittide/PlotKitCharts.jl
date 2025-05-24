@@ -43,20 +43,24 @@ end
 ##############################################################################
 # purely convenience functions
 
-plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
+#plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
+
+plot(p, f;  kwargs...) = qsave(draw(plot(input(p); kwargs...)), f)
+plot(x::Vector{PointList}; kw...) = Chart(x; kw...)
+
 
 
 ##############################################################################
 # option 4
 
 
-
-function Chart(data; kw...)
-    chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)
+function Chart(pll::Vector{PointList}; out = nothing, kw...)
+    chart = Chart(; pll, allowed_kws(Chart, kw)...)
     axis  = Axis(chart.pll; kw...)
     chart.axis = axis
     return chart
 end
+
 ##############################################################################
 
 # Axis also takes data, how does it do it

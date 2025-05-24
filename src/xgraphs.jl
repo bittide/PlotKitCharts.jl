@@ -3,8 +3,9 @@ module Xgraphs
 
 export XGraphStyle, XGraph, inputgraph, plotgraph
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, ati, circle, colormap, corners, draw, expand_box, line, qsave,  text, setoptions!, smallest_box_containing_data
+using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, VertexPairs, ati, circle, colormap, corners, draw, expand_box, line, qsave,  text, setoptions!, smallest_box_containing_data
 
+import ..Charts: Charts, plot
 
 using PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
 
@@ -39,14 +40,14 @@ Base.@kwdef mutable struct XGraphStyle
     scaletype = :x
 end
 
-plotgraph(graph, f; kw...) =  qsave(draw(XGraph(graph; kw...)), f)
-inputgraph(data) = (data.edges, data.layout)
 
-function XGraph(data; kw...)
+# convenience function
+Charts.plot(x::VertexPairs; kw...) = XGraph(x; kw...)
+
+function XGraph(data::VertexPairs; kw...)
     gs = XGraphStyle()
     setoptions!(gs, "", kw...)
-    edges, layout = inputgraph(data)
-    return XGraph(gs, edges, layout; kw...)
+    return XGraph(gs, data.edges, data.layout; kw...)
 end
 
     
