@@ -14,12 +14,12 @@
 
 module Charts
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text, qsave
+using PlotKitCairo: ChainList, Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text, qsave
 using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
 
-export Chart, drawlabel, drawchartlabels, plot
+export Chart, MultiChart, drawlabel, drawchartlabels, plot
 
 Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
@@ -82,39 +82,72 @@ end
 
 function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart)
     for (i, pl) in enumerate(chart.pll)
-        #println("points = ", pl.points)
-        line(ad, pl.points; linestyle = ati(chart.linestyle, i))
-        if ati(chart.markerradius, i) > 0
-            for p in pl.points
-                circle(ad, p, ati(chart.markerradius, i);
-                       scaletype = ati(chart.markerscaletype, i), 
-                       fillcolor = ati(chart.markerfillcolor, i), 
-                       linestyle = ati(chart.markerlinestyle, i))
-            end
-        end
+        drawpll(ad, pl, i, chart)
+        # line(ad, pl.points; linestyle = ati(chart.linestyle, i))
+        # if ati(chart.markerradius, i) > 0
+        #     for p in pl.points
+        #         circle(ad, p, ati(chart.markerradius, i);
+        #                scaletype = ati(chart.markerscaletype, i), 
+        #                fillcolor = ati(chart.markerfillcolor, i), 
+        #                linestyle = ati(chart.markerlinestyle, i))
+        #     end
+        # end
     end
     drawchartlabels(ad, chart)
     return ad
 end
 
-function drawchartlabels(ad::AxisDrawable, chart::Chart)
-    if chart.labeled
-        xdes = chart.xdes
-        if isnothing(xdes)
-            xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
-        end
-        llp = LineLabelPositioner(ad, chart.pll, xdes; separation = chart.labelseparation)
-        for i = 1:length(chart.pll)
-            drawlabel(ad, llp.markerpositions[i], i;
-                      labelradius = chart.labelradius,
-                      labelcolor = ati(chart.labelcolor, i),
-                      labeltext = ati(chart.labeltext, i),
-                      fontsize = chart.labelfontsize,
-                      fontname = chart.labelfontname)
+function drawpll(ad, pl::PointList, i, (; linestyle, markerradius, markerscaletype, markerfillcolor, markerlinestyle))
+    line(ad, pl.points; linestyle=ati(linestyle, i))
+    if ati(markerradius, i) > 0
+        for p in pl.points
+            circle(ad, p, ati(markerradius, i);
+                scaletype=ati(markerscaletype, i),
+                fillcolor=ati(markerfillcolor, i),
+                linestyle=ati(markerlinestyle, i))
         end
     end
 end
 
+
+
+############################################################
+
+function drawchartlabels(ad::AxisDrawable, chart::Chart)
+    if chart.labeled
+        drawlabels(ad, chart.pll, chart)
+        # xdes = chart.xdes
+        # if isnothing(xdes)
+        #     xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
+        # end
+        # llp = LineLabelPositioner(ad, chart.pll, xdes; separation = chart.labelseparation)
+        # for i = 1:length(chart.pll)
+        #     drawlabel(ad, llp.markerpositions[i], i;
+        #               labelradius = chart.labelradius,
+        #               labelcolor = ati(chart.labelcolor, i),
+        #               labeltext = ati(chart.labeltext, i),
+        #               fontsize = chart.labelfontsize,
+        #               fontname = chart.labelfontname)
+        # end
+    end
+end
+
+function drawlabels(ad, pll, (;xdes, labelseparation, labelradius, 
+    labelcolor, labeltext, labelfontsize, labelfontname))
+    if isnothing(xdes)
+        xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
+    end
+    llp = LineLabelPositioner(ad, pll, xdes; separation = labelseparation)
+        for i = 1:length(pll)
+            drawlabel(ad, llp.markerpositions[i], i;
+                      labelradius = labelradius,
+                      labelcolor = ati(labelcolor, i),
+                      labeltext = ati(labeltext, i),
+                      fontsize = labelfontsize,
+                      fontname = labelfontname)
+        end
+
+end
 
 
 function drawlabel(ad::AxisDrawable, p::Point, i;
@@ -126,6 +159,95 @@ function drawlabel(ad::AxisDrawable, p::Point, i;
     text(ad.ctx, p, fontsize, labelcolor, labeltext,
          fname = fontname, horizontal = "center", vertical = "center")
 end
+
+#########################################################################
+
+plot(x::Vector{ChainList}; kw...) = MultiChart(x; kw...)
+
+Base.@kwdef mutable struct MultiChart
+    linestyle = i -> LineStyle(colormap(i) , 1)
+    markerradius = i -> 0
+    markerfillcolor = i -> nothing
+    markerlinestyle = i -> nothing
+    markerscaletype = i -> :none
+    labeled = true
+    xdes = nothing
+    labelfontname = "Sans"
+    labelfontsize = 9
+    labelradius = 8
+    labeltext = i -> string(i)
+    labelcolor = i -> colormap(i)
+    labelseparation = 10
+    cll::Vector{ChainList}   # chainlist list
+    axis = nothing
+    labelpositioner = nothing
+end
+
+
+MultiChart(x; kw...) = MultiChart(input(x); kw...)
+
+# returns a vector of PointLists
+function flatten_chainlist(cll::Vector{ChainList})
+     reduce(vcat, a.chains for a in cll)
+end
+
+
+function MultiChart(cll::Vector{ChainList}; kw...)
+    mchart = MultiChart(; cll, allowed_kws(MultiChart, kw)...)
+    pll = flatten_chainlist(cll)
+    axis  = Axis(pll; kw...)
+    mchart.axis = axis
+    return mchart
+end
+
+
+function PlotKitCairo.draw(mchart::MultiChart)
+    axis = mchart.axis
+    ad = AxisDrawable(axis)
+    drawaxis(ad)
+    setclipbox(ad)
+    draw(ad, mchart)
+    return ad
+end
+
+rightmost(pl::PointList) = maximum(a.x for a in pl.points)
+leftmost(pl::PointList) = minimum(a.x for a in pl.points)
+
+
+"""
+    get_biggest_piece(cl::ChainList, xmin, xmax)
+
+Given a chainlist, that is a list of pointlists, overlap each with the [xmin,xmax]
+interval and return the pointlist with largest overlap .
+"""
+function get_biggest_piece(cl::ChainList, xmin, xmax)
+    psizes = [min(rightmost(pl), xmax) - max(leftmost(pl), xmin) for pl in cl.chains]
+    val, ind = findmax(psizes)
+    return cl.chains[ind]
+end
+
+function PlotKitCairo.draw(ad::AxisDrawable, mchart::MultiChart)
+    xmin = mchart.axis.box.xmin
+    xmax = mchart.axis.box.xmax
+    biggest_pieces_pll = [get_biggest_piece(cl, xmin, xmax) for cl in mchart.cll]
+    for (i, chainlist) in enumerate(mchart.cll)
+        chains = chainlist.chains    # a vector{PointList}
+        for pl in chains
+            drawpll(ad, pl, i, mchart)
+        end 
+    end
+    if mchart.labeled
+        drawlabels(ad, biggest_pieces_pll, mchart)
+    end 
+    return ad
+end
+
+
+
+
+
+
+
 
 
 
