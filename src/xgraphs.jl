@@ -15,11 +15,11 @@ Base.@kwdef mutable struct XGraphStyle
     nodecolors = i -> colormap(3)
     nodefontsize = i -> 0.15
     nodefontname = i -> "Sans"
-    noderadius = i -> 0.2    
+    noderadius = i -> 0.2
     edgelabels = string
     edgelabelpos = e -> 0.5
     edgelabelfontsize = e -> 0.12
-    edgelabelfontname = e -> "Sans"    
+    edgelabelfontname = e -> "Sans"
     edgelabelradius = e -> 0.14
     edgelabelfillcolor = e -> Color(:white)
     edgelabeltextcolor = e -> colormap(1)
@@ -42,7 +42,7 @@ end
 
 
 # convenience function
-Charts.plot(x::VertexPairs; kw...) = XGraph(x; kw...)
+Charts.plotselector(x::VertexPairs; kw...) = XGraph(x; kw...)
 
 XGraph(x; kw...) = XGraph(input(x); kw...)
 
@@ -52,7 +52,7 @@ function XGraph(data::VertexPairs; kw...)
     return XGraph(gs, data.edges, data.layout; kw...)
 end
 
-    
+
 #function XGraph(edges::Vector{@NamedTuple{src::Int64, dst::Int64}}, x::Vector{Point}; kw...)
 #    gs = XGraphStyle()
 #    setoptions!(gs, "", kw...)
@@ -108,7 +108,7 @@ function XGraph(gs::XGraphStyle, edges, x; kw...)
             nodes = (ati(gs.extraedgelabelnodes,e)..., edge_label_nodes(e),)
             arrows = ((ati(gs.arrowposlabel,e), arr), )
         end
-        
+
         if !gs.directed
             if ati(gs.edgecurved,e)
                 return CurvedPath(; nodes, linestyle = ati(gs.linestyles,e),

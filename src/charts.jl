@@ -14,12 +14,13 @@
 
 module Charts
 
-using PlotKitCairo: ChainList, Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, input, line, setoptions!, text, qsave
+using PlotKitCairo: ChainList, Color, LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw, getoptions_tuple, input, line, setoptions!, text, qsave
 using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
 
 using ..LabelPositioner: LineLabelPositioner
 
-export Chart, MultiChart, drawlabel, drawchartlabels, plot
+export blackmarkers, Chart, blackdots, dashed, dotted, drawchartlabels, drawlabel, MultiChart, plot, plot2, plotselector, thick, thinblack
+
 
 Base.@kwdef mutable struct Chart
     linestyle = i -> LineStyle(colormap(i) , 1)
@@ -45,8 +46,41 @@ end
 
 #plot(p, f;  kwargs...) =  qsave(draw(Chart(p; kwargs...)), f)
 
-plot(p, f;  kwargs...) = qsave(draw(plot(input(p); kwargs...)), f)
-plot(x::Vector{PointList}; kw...) = Chart(x; kw...)
+#
+# Things that should work:
+#
+#   plot(x, filename)
+#   ad = plot(x)
+#   ad = plot(ad, y)
+#   plot(ad, y, filename)
+#
+#
+plot(p, f;  kw...) = qsave(plot(p; kw...), f)
+plot(ad::AxisDrawable, x; kw...) = draw(ad, plotselector(input(x); kw...))
+plot(ad::AxisDrawable, x, f; kw...) = qsave(plot(ad, x; kw...), f)
+plot(x; kw...) = draw(plotselector(input(x); kw...))
+
+# plot 2 datasets on the same graph
+function plot2(p1, p2, f;
+    linestyle1 = i -> LineStyle(colormap(i), 3),
+    linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]),
+    kw...)
+    ad = plot(p1; linestyle = linestyle1, kw...)
+    plot(ad, p2, f; linestyle = linestyle2)
+end
+
+plotselector(x::Vector{PointList}; kw...) = Chart(x; kw...)
+
+thinblack = getoptions_tuple(; linestyle=LineStyle(Color(0, 0, 0), 1))
+thick = getoptions_tuple(; linestyle=i -> LineStyle(colormap(i), 3))
+blackmarkers = getoptions_tuple(; linestyle=nothing, markerradius=2, scaletype=nothing,
+    markerfillcolor=Color(0, 0, 0))
+dashed = getoptions_tuple(; linestyle=i -> LineStyle(; color=colormap(i), width=2,
+    cap=:butt, dashes=[8.0, 8.0]))
+dotted = getoptions_tuple(; linestyle=i -> LineStyle(; color=colormap(i), width=2,
+    cap=:round, dashes=[0.0, 8.0]))
+blackdots = getoptions_tuple(; linestyle = LineStyle(; color = Color(0,0,0), width=3,
+    cap=:round, dashes=[0.0, 8.0]))
 
 
 ##############################################################################
@@ -87,8 +121,8 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart)
         # if ati(chart.markerradius, i) > 0
         #     for p in pl.points
         #         circle(ad, p, ati(chart.markerradius, i);
-        #                scaletype = ati(chart.markerscaletype, i), 
-        #                fillcolor = ati(chart.markerfillcolor, i), 
+        #                scaletype = ati(chart.markerscaletype, i),
+        #                fillcolor = ati(chart.markerfillcolor, i),
         #                linestyle = ati(chart.markerlinestyle, i))
         #     end
         # end
@@ -132,7 +166,7 @@ function drawchartlabels(ad::AxisDrawable, chart::Chart)
     end
 end
 
-function drawlabels(ad, pll, (;xdes, labelseparation, labelradius, 
+function drawlabels(ad, pll, (;xdes, labelseparation, labelradius,
     labelcolor, labeltext, labelfontsize, labelfontname))
     if isnothing(xdes)
         xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
@@ -154,7 +188,7 @@ function drawlabel(ad::AxisDrawable, p::Point, i;
                    labeltext = string(i),
                    labelcolor = colormap(i),
                    labelradius = 8, fontsize = 9, fontname = "Sans")
-    circle(ad.ctx, p, labelradius; 
+    circle(ad.ctx, p, labelradius;
            linestyle = LineStyle(labelcolor, 1), fillcolor = Color(:white))
     text(ad.ctx, p, fontsize, labelcolor, labeltext,
          fname = fontname, horizontal = "center", vertical = "center")
@@ -234,11 +268,11 @@ function PlotKitCairo.draw(ad::AxisDrawable, mchart::MultiChart)
         chains = chainlist.chains    # a vector{PointList}
         for pl in chains
             drawpll(ad, pl, i, mchart)
-        end 
+        end
     end
     if mchart.labeled
         drawlabels(ad, biggest_pieces_pll, mchart)
-    end 
+    end
     return ad
 end
 
@@ -258,7 +292,7 @@ end
 ##############################################################################
 # option 1
 #
-# if you construct the axis like this, then you cannot put 
+# if you construct the axis like this, then you cannot put
 # options in the axis construction that depend on the the Chart struct
 #
 # function Chart(data; kw...)
@@ -298,14 +332,14 @@ end
 ##############################################################################
 # option 4
 #
-# 
+#
 # function Chart(data; kw...)
 #     chart = Chart(; pll = input(data), allowed_kws(Chart, kw)...)
 #     axis  = Axis(chart.pll; kw...)
 #     chart.axis = axis
 #     return chart
 # end
-# 
+#
 #
 # This way, options for Axis can be included in the call to Chart.
 # And if we need to compute quantities needed for the call
@@ -315,7 +349,7 @@ end
 # Another nice feature is that we don't need to store the kw in Chart.
 # The call to allowed_kws strips out any keyword arguments
 # that the base.kw constructor for Chart cannot accept.
-# 
+#
 
 
 
