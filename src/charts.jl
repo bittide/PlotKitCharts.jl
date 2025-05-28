@@ -61,12 +61,11 @@ plot(ad::AxisDrawable, x, f; kw...) = qsave(plot(ad, x; kw...), f)
 plot(x; kw...) = draw(plotselector(input(x); kw...))
 
 # plot 2 datasets on the same graph
-function plot2(p1, p2, f;
-    linestyle1 = i -> LineStyle(colormap(i), 3),
-    linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]),
-    kw...)
+plot2(p1, p2, f; kw...) = qsave(plot2(p1, p2; kw...), f)
+function plot2(p1, p2; linestyle1 = i -> LineStyle(colormap(i), 3), linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]), kw...)
     ad = plot(p1; linestyle = linestyle1, kw...)
-    plot(ad, p2, f; linestyle = linestyle2)
+    plot(ad, p2; linestyle = linestyle2)
+    return ad
 end
 
 plotselector(x::Vector{PointList}; kw...) = Chart(x; kw...)
