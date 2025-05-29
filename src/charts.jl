@@ -41,6 +41,7 @@ Base.@kwdef mutable struct Chart
     pll::Vector{PointList}   # pointlist list
     axis = nothing
     labelpositioner = nothing
+    drawbody = true
 end
 
 ##############################################################################
@@ -106,7 +107,9 @@ function PlotKitCairo.draw(chart::Chart)
     ad = AxisDrawable(axis)
     drawaxis(ad)
     setclipbox(ad)
-    draw(ad, chart)
+    if chart.drawbody
+        draw(ad, chart)
+    end
     return ad
 end
 
