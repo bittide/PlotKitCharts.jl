@@ -18,6 +18,7 @@ using PlotKitCairo: ChainList, Color, LineStyle, PlotKitCairo, Point, PointList,
       allowed_kws, ati, circle, colormap, draw, getoptions_tuple, input, line,
        setoptions!, text, qsave
 using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
+using PlotKitDiagrams: Graph
 
 using ..LabelPositioner: LineLabelPositioner
 
@@ -72,6 +73,7 @@ function plot2(p1, p2; linestyle1 = i -> LineStyle(colormap(i), 3), linestyle2 =
 end
 
 plotselector(x::Vector{PointList}; kw...) = Chart(x; kw...)
+plotselector(x::Graph; kw...) = x
 
 thinblack = getoptions_tuple(; linestyle=LineStyle(Color(0, 0, 0), 1))
 thick = getoptions_tuple(; linestyle=i -> LineStyle(colormap(i), 3))
