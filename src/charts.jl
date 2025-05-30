@@ -202,7 +202,7 @@ end
 
 #########################################################################
 
-plot(x::Vector{ChainList}; kw...) = MultiChart(x; kw...)
+plotselector(x::Vector{ChainList}; kw...) = MultiChart(x; kw...)
 
 Base.@kwdef mutable struct MultiChart
     linestyle = i -> LineStyle(colormap(i) , 1)
