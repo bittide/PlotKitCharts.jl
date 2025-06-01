@@ -22,7 +22,7 @@ import ..Charts: Charts, plot
 using JuliaTools
 using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
 using PlotKitCairo: PlotKitCairo, Color, LineStyle, Point, PointList, VertexPairs,
-    allowed_kws, circle, colormap, corners, draw, expand_box, input, line, qsave,
+    circle, colormap, corners, draw, expand_box, input, line, qsave,
     smallest_box_containing_data, text
 using PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
 

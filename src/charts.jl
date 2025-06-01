@@ -17,8 +17,8 @@ module Charts
 using ..LabelPositioner: LineLabelPositioner
 using JuliaTools
 using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
-using PlotKitCairo: PlotKitCairo, ChainList, Color, LineStyle, Point, PointList,
-    allowed_kws, circle, colormap, draw, getoptions_tuple, input, line, qsave, text
+using PlotKitCairo: PlotKitCairo, ChainList, Color, LineStyle, Point, PointList, circle,
+    colormap, draw, input, line, qsave, text
 using PlotKitDiagrams: Graph
 
 export blackmarkers, Chart, blackdots, dashed, dotted, drawchartlabels, drawlabel, MultiChart, plot, plot2, plotselector, thick, thinblack
