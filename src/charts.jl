@@ -14,13 +14,12 @@
 
 module Charts
 
-using PlotKitCairo: ChainList, Color, LineStyle, PlotKitCairo, Point, PointList,
-      allowed_kws, ati, circle, colormap, draw, getoptions_tuple, input, line,
-       setoptions!, text, qsave
-using PlotKitAxes: Axis, AxisDrawable, PlotKitAxes, drawaxis, setclipbox
-using PlotKitDiagrams: Graph
-
 using ..LabelPositioner: LineLabelPositioner
+using JuliaTools
+using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
+using PlotKitCairo: PlotKitCairo, ChainList, Color, LineStyle, Point, PointList,
+    allowed_kws, circle, colormap, draw, getoptions_tuple, input, line, qsave, text
+using PlotKitDiagrams: Graph
 
 export blackmarkers, Chart, blackdots, dashed, dotted, drawchartlabels, drawlabel, MultiChart, plot, plot2, plotselector, thick, thinblack
 

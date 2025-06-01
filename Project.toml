@@ -7,5 +7,7 @@ version = "0.1.1"
 PlotKitAxes = "d206e830-6474-4927-8e6c-338e8092c5c7"
 PlotKitDiagrams = "64f37de4-b5f6-47b0-be42-d75bd846556a"
 PlotKitCairo = "7ee0c3d4-a3be-4a4f-8af9-251da1807123"
+JuliaTools = "25bd99f7-d62a-43e8-a0d1-199798cd3f46"
+
 
 

@@ -14,8 +14,10 @@
 
 module Bars
 
-using PlotKitCairo: LineStyle, PlotKitCairo, Point, PointList, allowed_kws, ati, circle, colormap, draw,  line, rect, setoptions!
-using PlotKitAxes: Axis, AxisDrawable,  PlotKitAxes, drawaxis, setclipbox
+using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
+using PlotKitCairo: PlotKitCairo, LineStyle, Point, PointList, circle,
+    colormap, draw, line, rect
+using JuliaTools
 
 export BarChart
 
@@ -27,7 +29,7 @@ Base.@kwdef mutable struct BarChart
     axis = nothing
 end
 
-    
+
 ##############################################################################
 # option 4
 
@@ -61,17 +63,17 @@ end
 function PlotKitCairo.draw(ad::AxisDrawable, barchart::BarChart; kw...)
     barwidth = getbarwidth(barchart.pl)
     hw = barchart.barshrink * (barwidth/2)
-    
+
     for (i,p) in pairs(barchart.pl.points)
         linestyle = ati(barchart.linestyle, i)
         fillcolor = ati(barchart.fillcolor, i)
 
         rect(ad, Point(p.x - hw, 0), Point(2 * hw, p.y);
-             fillcolor = ati(barchart.fillcolor, i), 
+             fillcolor = ati(barchart.fillcolor, i),
              linestyle = ati(barchart.linestyle, i))
     end
-    
-    
+
+
 end
 
 
