@@ -1,28 +1,54 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 module Xgraphs
 
-export XGraphStyle, XGraph
+export XGraph, inputgraph, plot
 
-using PlotKitCairo: Color, LineStyle, PlotKitCairo, Point, circle, colormap, corners, draw, expand_box, line, text
+import ..Charts: Charts, plot
 
-using PlotKitAxes: PointList, setoptions!, smallest_box_containing_data
+using JuliaTools
+using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
+using PlotKitCairo: PlotKitCairo, Color, LineStyle, Point, PointList, VertexPairs,
+    circle, colormap, corners, draw, expand_box, input, line, qsave,
+    smallest_box_containing_data, text
 using PlotKitDiagrams: CurvedPath, Graph, Node, Path, StraightPath, TriangularArrow
 
-Base.@kwdef mutable struct XGraphStyle
+Base.@kwdef mutable struct XGraph
+    data::VertexPairs
+    pkgraph = nothing
+    axis = nothing
     directed = true
-    nodelabels = i -> ""
+    nodelabels = string
     nodecolors = i -> colormap(3)
     nodefontsize = i -> 0.15
     nodefontname = i -> "Sans"
-    noderadius = i -> 0.2    
-    edgelabels = e -> ""
+    noderadius = i -> 0.2
+    edgelabels = string
     edgelabelpos = e -> 0.5
     edgelabelfontsize = e -> 0.12
-    edgelabelfontname = e -> "Sans"    
+    edgelabelfontname = e -> "Sans"
     edgelabelradius = e -> 0.14
     edgelabelfillcolor = e -> Color(:white)
     edgelabeltextcolor = e -> colormap(1)
-    linestyles = e -> LineStyle(Color(:black), 1)
+    edgelabeloffset = e -> nothing
+    edgecurved = e -> false
+    edgecurveparam = e -> 0.3
+    edgetheta1 = e -> -pi/6
+    edgetheta2 = e -> -pi/6
+    linestyles = e -> LineStyle(Color(:black), 3)
     arrowcolors = e -> Color(:black)
     arrowposnolabel = e -> 0.5
     arrowposlabel = e -> 0.8
@@ -31,16 +57,43 @@ Base.@kwdef mutable struct XGraphStyle
     classes = []
     classmargin = 0.4
     extraedgelabelnodes = e -> ()
-end
-
-function XGraph(edges, x; kw...)
-    gs = XGraphStyle()
-    setoptions!(gs, "", kw...)
-    return XGraph(gs, edges, x; kw...)
+    scaletype = :x
+    drawbody = true
 end
 
 
-function XGraph(gs::XGraphStyle, edges, x; kw...)
+# convenience function
+Charts.plotselector(x::VertexPairs; kw...) = XGraph(x; kw...)
+
+XGraph(x; kw...) = XGraph(input(x); kw...)
+
+function XGraph(data::VertexPairs; kw...)
+    xg = XGraph(; data, allowed_kws(XGraph, kw)...)
+    xg.pkgraph = make_pkgraph(xg::XGraph; kw...)
+    xg.axis = xg.pkgraph.axis
+    return xg
+end
+
+function PlotKitCairo.draw(xg::XGraph)
+    axis = xg.axis
+    ad = AxisDrawable(axis)
+    drawaxis(ad)
+    setclipbox(ad)
+    if xg.drawbody
+        draw(ad, xg)
+    end
+    return ad
+end
+
+function PlotKitCairo.draw(ad::AxisDrawable, xg::XGraph)
+    draw(ad, xg.pkgraph)
+    return ad
+end
+
+
+function make_pkgraph(xg::XGraph; kw...)
+    x = xg.data.layout
+    edges = xg.data.edges
     n = length(x)
     m = length(edges)
     function has_both_edges(e)
@@ -52,62 +105,78 @@ function XGraph(gs::XGraphStyle, edges, x; kw...)
     nodes_to_bbox_corners(nodeids) = corners(
         expand_box(smallest_box_containing_data(
             PointList( [a for a in nodepoint.(nodeids)] )),
-                   gs.classmargin,  gs.classmargin))
+                   xg.classmargin,  xg.classmargin))
 
     makeclass(cls) = StraightPath(; points = nodes_to_bbox_corners(cls.nodeids),
                                   closed = true, linestyle = nothing,
                                   fillcolor = cls.fillcolor)
-    graph_extras = makeclass.(gs.classes)
+    graph_extras = makeclass.(xg.classes)
 
-    graph_nodes = [Node(; text = string(gs.nodelabels(i)),
-                        fontsize = gs.nodefontsize(i),
-                        fontname = gs.nodefontname(i),
-                        radius = gs.noderadius(i),
-                        fillcolor = gs.nodecolors(i)) for i=1:n]
+    graph_nodes = [Node(; text = string(ati(xg.nodelabels,i)),
+                        fontsize = ati(xg.nodefontsize,i),
+                        fontname = ati(xg.nodefontname,i),
+                        radius = ati(xg.noderadius,i),
+                        scaletype = xg.scaletype,
+                        fillcolor = ati(xg.nodecolors,i)) for i=1:n]
 
-    edge_label_nodes(e) = (gs.edgelabelpos(e),
-                           Node(fontsize = gs.edgelabelfontsize(e),
-                                fontname = gs.edgelabelfontname(e),
-                                radius = gs.edgelabelradius(e),
-                                fillcolor = gs.edgelabelfillcolor(e),
-                                textcolor = gs.edgelabeltextcolor(e),
+    edge_label_nodes(e) = (ati(xg.edgelabelpos,e),
+                           Node(fontsize = ati(xg.edgelabelfontsize,e),
+                                fontname = ati(xg.edgelabelfontname,e),
+                                radius = ati(xg.edgelabelradius,e),
+                                fillcolor = ati(xg.edgelabelfillcolor,e),
+                                textcolor = ati(xg.edgelabeltextcolor,e),
+                                offset = ati(xg.edgelabeloffset,e),
                                 linestyle = nothing,
-                                text = string(gs.edgelabels(e))))
+                                text = string(ati(xg.edgelabels,e))))
 
     function path(e)
-        arr = TriangularArrow(size = gs.arrowsize(e),
-                              fillcolor = gs.arrowcolors(e),
-                              center = gs.arrowcenter(e)
+        arr = TriangularArrow(size = ati(xg.arrowsize,e),
+                              fillcolor = ati(xg.arrowcolors,e),
+                              center = ati(xg.arrowcenter,e)
                               )
-        if gs.edgelabels(e) == ""
-            nodes = (gs.extraedgelabelnodes(e)...,)
-            arrows = ((gs.arrowposnolabel(e), arr), )
+        if ati(xg.edgelabels,e) == ""
+            nodes = (ati(xg.extraedgelabelnodes,e)...,)
+            arrows = ((ati(xg.arrowposnolabel,e), arr), )
         else
-            nodes = (gs.extraedgelabelnodes(e)..., edge_label_nodes(e),)
-            arrows = ((gs.arrowposlabel(e), arr), )
+            nodes = (ati(xg.extraedgelabelnodes,e)..., edge_label_nodes(e),)
+            arrows = ((ati(xg.arrowposlabel,e), arr), )
         end
-        
-        if !gs.directed
+
+        if !xg.directed
+            if ati(xg.edgecurved,e)
+                return CurvedPath(; nodes, linestyle = ati(xg.linestyles,e),
+                                  curveparam = ati(xg.edgecurveparam,e),
+                                  theta1 = ati(xg.edgetheta1,e),
+                                  theta2 = ati(xg.edgetheta2,e)
+                                  )
+            end
             # no arrows, straight paths
             if has_both_edges(e)
                 # only draw one of the two edges
                 if edges[e].src < edges[e].dst
-                    return Path(; nodes, linestyle = gs.linestyles(e))
+                    return Path(; nodes, linestyle = ati(xg.linestyles,e))
                 else
                     return Path(; nodes, linestyle = nothing)
                 end
             else
-                return Path(; nodes, linestyle = gs.linestyles(e))
+                return Path(; nodes, linestyle = ati(xg.linestyles,e))
             end
         end
 
-        if has_both_edges(e)
-            return CurvedPath(; arrows, nodes, linestyle = gs.linestyles(e))
+        if has_both_edges(e) || ati(xg.edgecurved,e)
+            return CurvedPath(; arrows, nodes, linestyle = ati(xg.linestyles,e),
+                              curveparam = ati(xg.edgecurveparam,e),
+                              theta1 = ati(xg.edgetheta1,e),
+                              theta2 = ati(xg.edgetheta2,e)
+                              )
         end
-        return Path(; arrows, nodes, linestyle = gs.linestyles(e))
+        return Path(; arrows, nodes, linestyle = ati(xg.linestyles,e))
     end
     graph_paths = [ path(e) for e=1:m]
-    pkgr = Graph(edges, x; graph_extras, graph_nodes, graph_paths, kw...)
+    pkgr = Graph(xg.data;
+        extras = graph_extras,
+        nodes = graph_nodes,
+        paths = graph_paths, kw...)
     return pkgr
 end
 

@@ -17,14 +17,6 @@ function main1()
 end
 
 
-# simple chart with labels
-function main2)
-    println("main2")
-
-    return true
-end
-
-
 
 
 # chart with manually labeled lines
