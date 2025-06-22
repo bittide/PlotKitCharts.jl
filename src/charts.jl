@@ -65,9 +65,26 @@ plot(x; kw...) = draw(plotselector(input(x); kw...))
 
 # plot 2 datasets on the same graph
 plot2(p1, p2, f; kw...) = qsave(plot2(p1, p2; kw...), f)
-function plot2(p1, p2; linestyle1 = i -> LineStyle(colormap(i), 3), linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]), kw...)
-    ad = plot(p1; linestyle = linestyle1, kw...)
-    plot(ad, p2; linestyle = linestyle2)
+function plot2(p1, p2;
+        linestyle1 = i -> LineStyle(colormap(i), 3),
+        linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]),
+        markerfillcolor1 = nothing,
+        markerfillcolor2 = nothing,
+        markerlinestyle1 = nothing,
+        markerlinestyle2 = nothing,
+        markerradius1 = 0,
+        markerradius2 = 0,
+        kw...)
+    ad = plot(p1; linestyle = linestyle1,
+        markerfillcolor = markerfillcolor1,
+        markerlinestyle = markerlinestyle1,
+        markerradius = markerradius1,
+        kw...)
+    plot(ad, p2; linestyle = linestyle2,
+            markerfillcolor = markerfillcolor2,
+            markerlinestyle = markerlinestyle2,
+            markerradius = markerradius2,
+    )
     return ad
 end
 
