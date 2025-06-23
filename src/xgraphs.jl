@@ -32,10 +32,12 @@ Base.@kwdef mutable struct XGraph
     axis = nothing
     directed = true
     nodelabels = string
-    nodecolors = i -> colormap(3)
-    nodefontsize = i -> 0.15
-    nodefontname = i -> "Sans"
-    noderadius = i -> 0.2
+    nodecolors = colormap(3)
+    nodefontsize = 0.15
+    nodefontname = "Sans"
+    noderadius = 0.2
+    nodelinestyle = LineStyle(Color(:black), 1)
+    nodetextcolor = Color(:white)
     edgelabels = string
     edgelabelpos = e -> 0.5
     edgelabelfontsize = e -> 0.12
@@ -116,6 +118,8 @@ function make_pkgraph(xg::XGraph; kw...)
                         fontsize = ati(xg.nodefontsize,i),
                         fontname = ati(xg.nodefontname,i),
                         radius = ati(xg.noderadius,i),
+                        linestyle = ati(xg.nodelinestyle, i),
+                        textcolor = ati(xg.nodetextcolor, i),
                         scaletype = xg.scaletype,
                         fillcolor = ati(xg.nodecolors,i)) for i=1:n]
 
