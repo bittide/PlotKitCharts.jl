@@ -131,6 +131,7 @@ function make_pkgraph(xg::XGraph; kw...)
                                 textcolor = ati(xg.edgelabeltextcolor,e),
                                 offset = ati(xg.edgelabeloffset,e),
                                 linestyle = nothing,
+                                scaletype = xg.scaletype,
                                 text = string(ati(xg.edgelabels,e))))
 
     function path(e)
