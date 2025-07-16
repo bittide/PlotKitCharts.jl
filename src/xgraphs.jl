@@ -76,12 +76,12 @@ function XGraph(data::VertexPairs; kw...)
     return xg
 end
 
-function PlotKitCairo.draw(xg::XGraph)
+function PlotKitCairo.draw(xg::XGraph; drawbody = true)
     axis = xg.axis
     ad = AxisDrawable(axis)
     drawaxis(ad)
     setclipbox(ad)
-    if xg.drawbody
+    if xg.drawbody && drawbody
         draw(ad, xg)
     end
     return ad
