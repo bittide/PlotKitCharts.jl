@@ -137,7 +137,8 @@ function make_pkgraph(xg::XGraph; kw...)
     function path(e)
         arr = TriangularArrow(size = ati(xg.arrowsize,e),
                               fillcolor = ati(xg.arrowcolors,e),
-                              center = ati(xg.arrowcenter,e)
+                              center = ati(xg.arrowcenter,e),
+                              scaletype = xg.scaletype
                               )
         if ati(xg.edgelabels,e) == ""
             nodes = (ati(xg.extraedgelabelnodes,e)...,)
