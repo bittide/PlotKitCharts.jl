@@ -18,14 +18,14 @@ using ..LabelPositioner: LineLabelPositioner
 using JuliaTools
 using PlotKitAxes: PlotKitAxes, Axis, AxisDrawable, drawaxis, setclipbox
 using PlotKitCairo: PlotKitCairo, ChainList, Color, LineStyle, Point, PointList, circle,
-    colormap, draw, input, line, qsave, text
+                    colormap, draw, input, line, qsave, text
 using PlotKitDiagrams: Graph
 
-export blackmarkers, Chart, blackdots, dashed, dotted, drawchartlabels, drawlabel, MultiChart, plot, plot2, plotselector, thick, thinblack
-
+export blackmarkers, Chart, blackdots, dashed, dotted, drawchartlabels, drawlabel, MultiChart,
+       plot, plot2, plotselector, thick, thinblack, markers
 
 Base.@kwdef mutable struct Chart
-    linestyle = i -> LineStyle(colormap(i) , 1)
+    linestyle = i -> LineStyle(colormap(i), 1)
     markerradius = i -> 0
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
@@ -58,50 +58,48 @@ end
 #   plot(ad, y, filename)
 #
 #
-plot(p, f;  kw...) = qsave(plot(p; kw...), f)
+plot(p, f; kw...) = qsave(plot(p; kw...), f)
 plot(ad::AxisDrawable, x; kw...) = draw(ad, plotselector(input(x); kw...))
 plot(ad::AxisDrawable, x, f; kw...) = qsave(plot(ad, x; kw...), f)
 plot(x; kw...) = draw(plotselector(input(x); kw...))
 
 # plot 2 datasets on the same graph
 plot2(p1, p2, f; kw...) = qsave(plot2(p1, p2; kw...), f)
-function plot2(p1, p2;
-        linestyle1 = i -> LineStyle(colormap(i), 3),
-        linestyle2 = LineStyle(; color = Color(0,0,0), width=3,cap=:round, dashes=[0.0, 8.0]),
-        markerfillcolor1 = nothing,
-        markerfillcolor2 = nothing,
-        markerlinestyle1 = nothing,
-        markerlinestyle2 = nothing,
-        markerradius1 = 0,
-        markerradius2 = 0,
-        kw...)
-    ad = plot(p1; linestyle = linestyle1,
-        markerfillcolor = markerfillcolor1,
-        markerlinestyle = markerlinestyle1,
-        markerradius = markerradius1,
-        kw...)
-    plot(ad, p2; linestyle = linestyle2,
-            markerfillcolor = markerfillcolor2,
-            markerlinestyle = markerlinestyle2,
-            markerradius = markerradius2,
-    )
+function plot2(p1, p2; linestyle1 = i -> LineStyle(colormap(i), 3),
+               linestyle2 = LineStyle(; color = Color(0, 0, 0), width = 3, cap = :round,
+                                      dashes = [0.0, 8.0]), markerfillcolor1 = nothing,
+               markerfillcolor2 = nothing, markerlinestyle1 = nothing,
+               markerlinestyle2 = nothing, markerradius1 = 0, markerradius2 = 0, kw...)
+    ad = plot(p1; linestyle = linestyle1, markerfillcolor = markerfillcolor1,
+              markerlinestyle = markerlinestyle1, markerradius = markerradius1, kw...)
+    plot(ad, p2; linestyle = linestyle2, markerfillcolor = markerfillcolor2,
+         markerlinestyle = markerlinestyle2, markerradius = markerradius2,)
     return ad
 end
 
 plotselector(x::Vector{PointList}; kw...) = Chart(x; kw...)
 plotselector(x::Graph; kw...) = x
 
-thinblack = getoptions_tuple(; linestyle=LineStyle(Color(0, 0, 0), 1))
-thick = getoptions_tuple(; linestyle=i -> LineStyle(colormap(i), 3))
-blackmarkers = getoptions_tuple(; linestyle=nothing, markerradius=2, scaletype=nothing,
-    markerfillcolor=Color(0, 0, 0))
-dashed = getoptions_tuple(; linestyle=i -> LineStyle(; color=colormap(i), width=2,
-    cap=:butt, dashes=[8.0, 8.0]))
-dotted = getoptions_tuple(; linestyle=i -> LineStyle(; color=colormap(i), width=2,
-    cap=:round, dashes=[0.0, 8.0]))
-blackdots = getoptions_tuple(; linestyle = LineStyle(; color = Color(0,0,0), width=3,
-    cap=:round, dashes=[0.0, 8.0]))
+thinblack = (; linestyle = LineStyle(Color(0, 0, 0), 1))
+thick = (; linestyle = i -> LineStyle(colormap(i), 3))
 
+# markers with no linestyle
+function markers(c::Symbol)
+    (; linestyle = nothing, markerradius = 2, scaletype = nothing, markerfillcolor = Color(c))
+end
+markers(c) = (; linestyle = nothing, markerradius = 2, scaletype = nothing, markerfillcolor = c)
+blackmarkers = markers(:black)
+
+# special linestyles
+dashed = (;
+          linestyle = i -> LineStyle(; color = colormap(i), width = 2, cap = :butt,
+                                     dashes = [8.0, 8.0]))
+dotted = (;
+          linestyle = i -> LineStyle(; color = colormap(i), width = 2, cap = :round,
+                                     dashes = [0.0, 8.0]))
+blackdots = (;
+             linestyle = LineStyle(; color = Color(0, 0, 0), width = 3, cap = :round,
+                                   dashes = [0.0, 8.0]))
 
 ##############################################################################
 # option 4
@@ -110,7 +108,7 @@ Chart(x; kw...) = Chart(input(x); kw...)
 
 function Chart(pll::Vector{PointList}; kw...)
     chart = Chart(; pll, allowed_kws(Chart, kw)...)
-    axis  = Axis(chart.pll; kw...)
+    axis = Axis(chart.pll; kw...)
     chart.axis = axis
     return chart
 end
@@ -130,7 +128,6 @@ function PlotKitCairo.draw(chart::Chart)
     end
     return ad
 end
-
 
 # should probably use this instead.
 # for (index,value)  in pairs(x); println(index, "  ", Tuple(index)); end
@@ -153,19 +150,16 @@ function PlotKitCairo.draw(ad::AxisDrawable, chart::Chart)
     return ad
 end
 
-function drawpll(ad, pl::PointList, i, (; linestyle, markerradius, markerscaletype, markerfillcolor, markerlinestyle))
-    line(ad, pl.points; linestyle=ati(linestyle, i))
+function drawpll(ad, pl::PointList, i,
+                 (; linestyle, markerradius, markerscaletype, markerfillcolor, markerlinestyle))
+    line(ad, pl.points; linestyle = ati(linestyle, i))
     if ati(markerradius, i) > 0
         for p in pl.points
-            circle(ad, p, ati(markerradius, i);
-                scaletype=ati(markerscaletype, i),
-                fillcolor=ati(markerfillcolor, i),
-                linestyle=ati(markerlinestyle, i))
+            circle(ad, p, ati(markerradius, i); scaletype = ati(markerscaletype, i),
+                   fillcolor = ati(markerfillcolor, i), linestyle = ati(markerlinestyle, i))
         end
     end
 end
-
-
 
 ############################################################
 
@@ -188,32 +182,26 @@ function drawchartlabels(ad::AxisDrawable, chart::Chart)
     end
 end
 
-function drawlabels(ad, pll, (;xdes, labelseparation, labelradius,
-    labelcolor, labeltext, labelfontsize, labelfontname))
+function drawlabels(ad, pll,
+                    (; xdes, labelseparation, labelradius, labelcolor, labeltext, labelfontsize,
+                     labelfontname))
     if isnothing(xdes)
-        xdes = (ad.axis.box.xmax + ad.axis.box.xmin)/2
+        xdes = (ad.axis.box.xmax + ad.axis.box.xmin) / 2
     end
     llp = LineLabelPositioner(ad, pll, xdes; separation = labelseparation)
-        for i = 1:length(pll)
-            drawlabel(ad, llp.markerpositions[i], i;
-                      labelradius = labelradius,
-                      labelcolor = ati(labelcolor, i),
-                      labeltext = ati(labeltext, i),
-                      fontsize = labelfontsize,
-                      fontname = labelfontname)
-        end
-
+    for i = 1:length(pll)
+        drawlabel(ad, llp.markerpositions[i], i; labelradius = labelradius,
+                  labelcolor = ati(labelcolor, i), labeltext = ati(labeltext, i),
+                  fontsize = labelfontsize, fontname = labelfontname)
+    end
 end
 
-
-function drawlabel(ad::AxisDrawable, p::Point, i;
-                   labeltext = string(i),
-                   labelcolor = colormap(i),
-                   labelradius = 8, fontsize = 9, fontname = "Sans")
-    circle(ad.ctx, p, labelradius;
-           linestyle = LineStyle(labelcolor, 1), fillcolor = Color(:white))
-    text(ad.ctx, p, fontsize, labelcolor, labeltext,
-         fname = fontname, horizontal = "center", vertical = "center")
+function drawlabel(ad::AxisDrawable, p::Point, i; labeltext = string(i),
+                   labelcolor = colormap(i), labelradius = 8, fontsize = 9, fontname = "Sans")
+    circle(ad.ctx, p, labelradius; linestyle = LineStyle(labelcolor, 1),
+           fillcolor = Color(:white))
+    text(ad.ctx, p, fontsize, labelcolor, labeltext, fname = fontname, horizontal = "center",
+         vertical = "center")
 end
 
 #########################################################################
@@ -221,7 +209,7 @@ end
 plotselector(x::Vector{ChainList}; kw...) = MultiChart(x; kw...)
 
 Base.@kwdef mutable struct MultiChart
-    linestyle = i -> LineStyle(colormap(i) , 1)
+    linestyle = i -> LineStyle(colormap(i), 1)
     markerradius = i -> 0
     markerfillcolor = i -> nothing
     markerlinestyle = i -> nothing
@@ -239,23 +227,20 @@ Base.@kwdef mutable struct MultiChart
     labelpositioner = nothing
 end
 
-
 MultiChart(x; kw...) = MultiChart(input(x); kw...)
 
 # returns a vector of PointLists
 function flatten_chainlist(cll::Vector{ChainList})
-     reduce(vcat, a.chains for a in cll)
+    reduce(vcat, a.chains for a in cll)
 end
-
 
 function MultiChart(cll::Vector{ChainList}; kw...)
     mchart = MultiChart(; cll, allowed_kws(MultiChart, kw)...)
     pll = flatten_chainlist(cll)
-    axis  = Axis(pll; kw...)
+    axis = Axis(pll; kw...)
     mchart.axis = axis
     return mchart
 end
-
 
 function PlotKitCairo.draw(mchart::MultiChart)
     axis = mchart.axis
@@ -268,7 +253,6 @@ end
 
 rightmost(pl::PointList) = maximum(a.x for a in pl.points)
 leftmost(pl::PointList) = minimum(a.x for a in pl.points)
-
 
 """
     get_biggest_piece(cl::ChainList, xmin, xmax)
@@ -298,19 +282,6 @@ function PlotKitCairo.draw(ad::AxisDrawable, mchart::MultiChart)
     return ad
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##############################################################################
 # option 1
 #
@@ -322,7 +293,6 @@ end
 #     return Chart(; data, axis, allowed_kws(Chart, kw)...)
 # end
 ##############################################################################
-
 
 ##############################################################################
 # option 2
@@ -350,7 +320,6 @@ end
 # PlotKitAxes.Axis(chart::Chart; kw...) = Axis(chart.data; chart.kw..., kw...)
 ##############################################################################
 
-
 ##############################################################################
 # option 4
 #
@@ -373,9 +342,4 @@ end
 # that the base.kw constructor for Chart cannot accept.
 #
 
-
-
 end
-
-
-
